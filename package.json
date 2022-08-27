@@ -2,6 +2,8 @@
   "name": "go-cqhttp",
   "version": "0.0.1",
   "description": "go-cqhttp",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "author": "Shigma <shigma10826@gmail.com>",
   "license": "MIT",
   "repository": {
@@ -25,10 +27,13 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "env-paths": "^2.2.1"
+    "axios": "^0.27.2",
+    "env-paths": "^2.2.1",
+    "tar": "^6.1.11"
   },
   "devDependencies": {
     "@types/node": "^18.7.13",
+    "@types/tar": "^6.1.1",
     "typescript": "^4.8.2"
   }
 }
