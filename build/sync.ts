@@ -1,6 +1,6 @@
 import { extension, getArch, getPlatform, version } from '../src/install'
 import { createWriteStream } from 'fs'
-import { mkdir, writeFile } from 'fs/promises'
+import { mkdir, rm, writeFile } from 'fs/promises'
 import { extract } from 'tar'
 import { join } from 'path'
 import axios from 'axios'
@@ -22,6 +22,8 @@ const matrix = [
 export async function download(platform: string, arch: string) {
   const cwd = join(__dirname, '../temp')
 
+  await rm(cwd, { recursive: true, force: true })
+
   const name = `go-cqhttp_${platform}_${arch}.${platform === 'win32' ? 'exe' : 'tar.gz'}`
   const url = `https://github.com/Mrs4s/go-cqhttp/releases/download/${version}/${name}`
 
@@ -40,10 +42,21 @@ export async function download(platform: string, arch: string) {
     }
   })
 
-  await writeFile(join(cwd, 'index.js'), `module.exports = __dirname + '/go-cqhttp${extension}'`)
+  await writeFile(join(cwd, 'index.js'), [
+    `module.exports.filename = __dirname + '/go-cqhttp${extension}'`,
+    `module.exports.version = '${version}'`,
+  ].join('\n'))
+
+  await writeFile(join(cwd, 'index.d.ts'), [
+    `export const filename: string`,
+    `export const version: string`,
+  ].join('\n'))
+
   await writeFile(join(cwd, 'package.json'), JSON.stringify({
     name: `@gocq/x-${platform}-${arch}`,
     version: require('../package.json').version,
+    main: 'index.js',
+    types: 'index.d.ts',
     os: [getPlatform(platform)],
     cpu: [getArch(arch)],
   }, null, 2))
@@ -55,4 +68,8 @@ export async function start() {
   for (const [platform, arch] of matrix) {
     await download(platform, arch)
   }
+}
+
+if (require.main === module) {
+  start()
 }

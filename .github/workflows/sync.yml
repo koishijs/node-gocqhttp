@@ -2,6 +2,7 @@ name: Sync
 
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   version:
@@ -18,7 +19,7 @@ jobs:
     outputs:
       tag: ${{ steps.version.outputs.tag }}
 
-  sync:
+  release:
     needs: [version]
     if: ${{ needs.version.outputs.tag }} == success
 
