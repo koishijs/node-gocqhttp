@@ -4,17 +4,52 @@ on:
   push:
 
 jobs:
-  build:
+  version:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - id: version
+        name: Check version
+        run: bash .github/workflows/tag.sh
+
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+
+  sync:
+    needs: [version]
+    if: ${{ needs.version.outputs.tag }} == success
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Setup Node
         uses: actions/setup-node@v2
         with:
           node-version: 16
+
       - name: Install
         run: yarn
+
       - name: Sync
         run: yarn sync
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Release
+        run: >
+          curl
+          -X POST
+          -H "Accept: application/vnd.github.v3+json"
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
+          https://api.github.com/repos/${{ github.repository }}/releases
+          -d '{
+            "name": "${{ needs.version.outputs.tag }}",
+            "tag_name": "${{ needs.version.outputs.tag }}",
+            "target_commitish": "${{ github.sha }}"
+          }'
