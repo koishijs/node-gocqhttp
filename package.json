@@ -2,6 +2,9 @@
   "name": "go-cqhttp",
   "version": "0.0.1",
   "description": "go-cqhttp",
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "author": "Shigma <shigma10826@gmail.com>",

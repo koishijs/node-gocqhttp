@@ -1,27 +1,30 @@
 import { components } from '@octokit/openapi-types'
-import gocqhttp from '.'
+import { existsSync, promises as fs } from 'fs'
+import { basename, dirname } from 'path'
+import { extract } from 'tar'
+import { executable } from '.'
+import axios from 'axios'
 
 export type Release = components['schemas']['release']
 
-export const extension = gocqhttp.extension
-export const version = gocqhttp.version
+export { version, extension } from '.'
 
-export function getArch(arch: string = process.arch) {
-  switch (arch) {
-    // @ts-ignore
-    case 'x32': return '386'
-    case 'x64': return 'amd64'
-    case 'arm64': return 'arm64'
-    case 'arm': return 'armv7'
-  }
-  throw new Error(`Unsupported architecture: ${arch}`)
+async function start() {
+  if (existsSync(executable)) return
+  const cwd = dirname(executable)
+  await fs.mkdir(cwd, { recursive: true })
+  const name = `${process.platform}-${process.arch}`
+  const { version } = require('../package.json')
+  const url = `https://registry.npmjs.org/@gocq/x-${name}/-/x-${name}-${version}.tgz`
+  const { data: stream } = await axios.get<NodeJS.ReadableStream>(url, { responseType: 'stream' })
+
+  await new Promise<void>((resolve, reject) => {
+    stream.on('end', resolve)
+    stream.on('error', reject)
+    stream.pipe(extract({ cwd, newer: true }, [basename(executable)]))
+  })
 }
 
-export function getPlatform(platform: string = process.platform) {
-  switch (platform) {
-    case 'darwin': return 'darwin'
-    case 'linux': return 'linux'
-    case 'win32': return 'windows'
-  }
-  throw new Error(`Unsupported platform: ${platform}`)
+if (require.main === module) {
+  start()
 }

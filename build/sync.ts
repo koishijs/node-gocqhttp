@@ -1,4 +1,4 @@
-import { extension, getArch, getPlatform, version } from '../src/install'
+import { extension, version } from '../src/install'
 import { createWriteStream } from 'fs'
 import { mkdir, rm, writeFile } from 'fs/promises'
 import { extract } from 'tar'
@@ -6,7 +6,29 @@ import { join } from 'path'
 import axios from 'axios'
 import spawn from 'execa'
 
-const matrix = [
+export function getArch(arch: string = process.arch) {
+  switch (arch) {
+    // @ts-ignore
+    case 'x32': return '386'
+    case 'x64': return 'amd64'
+    case 'arm64': return 'arm64'
+    case 'arm': return 'armv7'
+  }
+  throw new Error(`Unsupported architecture: ${arch}`)
+}
+
+export function getPlatform(platform: string = process.platform) {
+  switch (platform) {
+    case 'darwin': return 'darwin'
+    case 'linux': return 'linux'
+    case 'win32': return 'windows'
+  }
+  throw new Error(`Unsupported platform: ${platform}`)
+}
+
+type Target = [platform: string, arch: string]
+
+const matrix: Target[] = [
   ['darwin', 'x64'],
   ['darwin', 'arm64'],
   ['linux', 'x32'],
@@ -19,14 +41,16 @@ const matrix = [
   ['win32', 'arm'],
 ]
 
-export async function download(platform: string, arch: string) {
+export async function download(target: Target) {
   const cwd = join(__dirname, '../temp')
-
   await rm(cwd, { recursive: true, force: true })
 
-  const name = `go-cqhttp_${platform}_${arch}.${platform === 'win32' ? 'exe' : 'tar.gz'}`
+  const platform = getPlatform(target[0])
+  const arch = getArch(target[1])
+  const name = `go-cqhttp_${platform}_${arch}.${target[0] === 'win32' ? 'exe' : 'tar.gz'}`
   const url = `https://github.com/Mrs4s/go-cqhttp/releases/download/${version}/${name}`
 
+  console.log(`downloading from ${url}`)
   const [{ data: stream }] = await Promise.all([
     axios.get<NodeJS.ReadableStream>(url, { responseType: 'stream' }),
     mkdir(cwd, { recursive: true }),
@@ -35,7 +59,7 @@ export async function download(platform: string, arch: string) {
   await new Promise<void>((resolve, reject) => {
     stream.on('end', resolve)
     stream.on('error', reject)
-    if (platform === 'win32') {
+    if (target[0] === 'win32') {
       stream.pipe(createWriteStream(cwd + '/go-cqhttp.exe'))
     } else {
       stream.pipe(extract({ cwd, newer: true }, ['go-cqhttp']))
@@ -53,20 +77,20 @@ export async function download(platform: string, arch: string) {
   ].join('\n'))
 
   await writeFile(join(cwd, 'package.json'), JSON.stringify({
-    name: `@gocq/x-${platform}-${arch}`,
+    name: `@gocq/x-${target[0]}-${target[1]}`,
     version: require('../package.json').version,
     main: 'index.js',
     types: 'index.d.ts',
-    os: [getPlatform(platform)],
-    cpu: [getArch(arch)],
+    os: [platform],
+    cpu: [arch],
   }, null, 2))
 
   spawn.sync('npm', ['publish'], { cwd, stdio: 'inherit' })
 }
 
 export async function start() {
-  for (const [platform, arch] of matrix) {
-    await download(platform, arch)
+  for (const target of matrix) {
+    await download(target)
   }
 }
 
