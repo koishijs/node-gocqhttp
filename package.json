@@ -2,6 +2,25 @@
   "name": "go-cqhttp",
   "version": "0.0.1",
   "description": "go-cqhttp",
+  "author": "Shigma <shigma10826@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/koishijs/node-gocqhttp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/koishijs/node-gocqhttp/issues"
+  },
+  "homepage": "https://github.com/koishijs/node-gocqhttp",
+  "keywords": [
+    "qq",
+    "cqhttp",
+    "oicq",
+    "mirai",
+    "go-cqhttp",
+    "bot",
+    "chatbot"
+  ],
   "scripts": {
     "build": "tsc -b"
   },
