@@ -85,7 +85,7 @@ export async function download(target: Target) {
     cpu: [arch],
   }, null, 2))
 
-  spawn.sync('npm', ['publish'], { cwd, stdio: 'inherit' })
+  spawn.sync('npm', ['publish', '--access', 'public'], { cwd, stdio: 'inherit' })
 }
 
 export async function start() {
