@@ -1,0 +1,15 @@
+{
+  "name": "go-cqhttp",
+  "version": "0.0.1",
+  "description": "go-cqhttp",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "env-paths": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.13",
+    "typescript": "^4.8.2"
+  }
+}
