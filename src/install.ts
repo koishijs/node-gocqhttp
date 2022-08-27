@@ -1,15 +1,10 @@
-import { components } from '@octokit/openapi-types'
 import { existsSync, promises as fs } from 'fs'
 import { basename, dirname } from 'path'
 import { extract } from 'tar'
 import { executable } from '.'
 import axios from 'axios'
 
-export type Release = components['schemas']['release']
-
-export { version, extension } from '.'
-
-async function start() {
+export async function download() {
   if (existsSync(executable)) return
   const cwd = dirname(executable)
   await fs.mkdir(cwd, { recursive: true })
@@ -23,8 +18,4 @@ async function start() {
     stream.on('error', reject)
     stream.pipe(extract({ cwd, newer: true }, [basename(executable)]))
   })
-}
-
-if (require.main === module) {
-  start()
 }

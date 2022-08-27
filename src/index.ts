@@ -2,13 +2,13 @@ import env from 'env-paths'
 import { join } from 'path'
 import { spawn, SpawnOptions } from 'child_process'
 
-function gocqhttp(options: gocqhttp.Options = {}) {
+function gocq(options: gocq.Options = {}) {
   const args: string[] = []
   if (options.faststart) args.push('-faststart')
-  return spawn(gocqhttp.executable, options)
+  return spawn(gocq.executable, options)
 }
 
-namespace gocqhttp {
+namespace gocq {
   export const version = 'v1.0.0-rc3'
 
   export interface Options extends SpawnOptions {
@@ -19,4 +19,4 @@ namespace gocqhttp {
   export const executable = join(env('gocqhttp').data, version, 'go-cqhttp' + extension)
 }
 
-export = gocqhttp
+export = gocq

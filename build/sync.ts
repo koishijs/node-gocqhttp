@@ -1,4 +1,5 @@
-import { extension, version } from '../src/install'
+import { components } from '@octokit/openapi-types'
+import { extension, version } from '../src'
 import { createWriteStream } from 'fs'
 import { mkdir, rm, writeFile } from 'fs/promises'
 import { extract } from 'tar'
@@ -6,9 +7,10 @@ import { join } from 'path'
 import axios from 'axios'
 import spawn from 'execa'
 
+export type Release = components['schemas']['release']
+
 export function getArch(arch: string = process.arch) {
   switch (arch) {
-    // @ts-ignore
     case 'x32': return '386'
     case 'x64': return 'amd64'
     case 'arm64': return 'arm64'
