@@ -1,5 +1,8 @@
-const { download } = require('./lib/install')
+const { existsSync } = require('fs')
+const { resolve } = require('path')
 
-if (require.main === module) {
-  download()
+if (!existsSync(resolve(__dirname, 'src'))) {
+  /** @type {import('./src/install')} */
+  const utils = require('./lib/install')
+  utils.download()
 }
