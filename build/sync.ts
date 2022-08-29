@@ -11,7 +11,7 @@ export type Release = components['schemas']['release']
 
 export function getArch(arch: string = process.arch) {
   switch (arch) {
-    case 'x32': return '386'
+    case 'ia32': return '386'
     case 'x64': return 'amd64'
     case 'arm64': return 'arm64'
     case 'arm': return 'armv7'
@@ -33,11 +33,11 @@ type Target = [platform: string, arch: string]
 const matrix: Target[] = [
   ['darwin', 'x64'],
   ['darwin', 'arm64'],
-  ['linux', 'x32'],
+  ['linux', 'ia32'],
   ['linux', 'x64'],
   ['linux', 'arm64'],
   ['linux', 'arm'],
-  ['win32', 'x32'],
+  ['win32', 'ia32'],
   ['win32', 'x64'],
   ['win32', 'arm64'],
   ['win32', 'arm'],
