@@ -1,11 +1,12 @@
 import { existsSync, promises as fs } from 'fs'
 import { basename, dirname } from 'path'
 import { extract } from 'tar'
-import { executable } from '.'
+import { local, shared } from '.'
 import get from 'get-registry'
 import axios from 'axios'
 
 export async function download() {
+  const executable = process.env.GOCQHTTP_LOCAL ? local() : shared()
   if (existsSync(executable)) return
 
   const registry = (await get()).replace(/\/$/, '')

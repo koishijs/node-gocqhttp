@@ -1,11 +1,14 @@
 import env from 'env-paths'
-import { join } from 'path'
+import { resolve } from 'path'
+import { existsSync } from 'fs'
 import { spawn, SpawnOptions } from 'child_process'
 
 function gocq(options: gocq.Options = {}) {
   const args: string[] = []
   if (options.faststart) args.push('-faststart')
-  return spawn(gocq.executable, options)
+  const local = gocq.local()
+  const executable = existsSync(local) ? local : gocq.shared()
+  return spawn(executable, options)
 }
 
 namespace gocq {
@@ -16,7 +19,8 @@ namespace gocq {
   }
 
   export const extension = process.platform === 'win32' ? '.exe' : ''
-  export const executable = join(env('gocqhttp').data, version, 'go-cqhttp' + extension)
+  export const local = () => resolve(__dirname, '../bin', 'go-cqhttp' + extension)
+  export const shared = () => resolve(env('gocqhttp').data, version, 'go-cqhttp' + extension)
 }
 
 export = gocq
