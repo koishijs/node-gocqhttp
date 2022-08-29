@@ -5,7 +5,7 @@ import { mkdir, rm, writeFile } from 'fs/promises'
 import { extract } from 'tar'
 import { join } from 'path'
 import axios from 'axios'
-import spawn from 'execa'
+import { exec, execSync } from 'child_process'
 
 export type Release = components['schemas']['release']
 
@@ -49,8 +49,8 @@ export async function download(target: Target) {
 
   const platform = getPlatform(target[0])
   const arch = getArch(target[1])
-  const name = `go-cqhttp_${platform}_${arch}.${target[0] === 'win32' ? 'exe' : 'tar.gz'}`
-  const url = `https://github.com/Mrs4s/go-cqhttp/releases/download/${version}/${name}`
+  const filename = `go-cqhttp_${platform}_${arch}.${target[0] === 'win32' ? 'exe' : 'tar.gz'}`
+  const url = `https://github.com/Mrs4s/go-cqhttp/releases/download/${version}/${filename}`
 
   console.log(`downloading from ${url}`)
   const [{ data: stream }] = await Promise.all([
@@ -78,8 +78,9 @@ export async function download(target: Target) {
     `export const version: string`,
   ].join('\n'))
 
+  const name = `@gocq/x-${target[0]}-${target[1]}`
   await writeFile(join(cwd, 'package.json'), JSON.stringify({
-    name: `@gocq/x-${target[0]}-${target[1]}`,
+    name,
     version: require('../package.json').version,
     main: 'index.js',
     types: 'index.d.ts',
@@ -87,7 +88,8 @@ export async function download(target: Target) {
     cpu: [arch],
   }, null, 2))
 
-  spawn.sync('npm', ['publish', '--access', 'public'], { cwd, stdio: 'inherit' })
+  execSync(['npm', 'publish', '--access', 'public'].join(' '), { cwd, stdio: 'inherit' })
+  await axios.put('https://registry-direct.npmmirror.com/' + name + '/sync?sync_upstream=true')
 }
 
 export async function start() {
