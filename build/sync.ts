@@ -1,5 +1,5 @@
 import { components } from '@octokit/openapi-types'
-import { extension, version } from '../src'
+import { basename, version } from '../src'
 import { createWriteStream } from 'fs'
 import { mkdir, rm, writeFile } from 'fs/promises'
 import { execSync } from 'child_process'
@@ -69,7 +69,7 @@ export async function download(target: Target) {
   })
 
   await writeFile(join(cwd, 'index.js'), [
-    `module.exports.filename = __dirname + '/go-cqhttp${extension}'`,
+    `module.exports.filename = __dirname + '/${basename}'`,
     `module.exports.version = '${version}'`,
   ].join('\n'))
 
