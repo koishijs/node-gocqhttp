@@ -1,5 +1,5 @@
 import { existsSync, promises as fs } from 'fs'
-import { basename, dirname } from 'path'
+import { dirname } from 'path'
 import { extract } from 'tar'
 import { local, shared } from '.'
 import get from 'get-registry'
@@ -20,6 +20,6 @@ export async function download() {
   await new Promise<void>((resolve, reject) => {
     stream.on('end', resolve)
     stream.on('error', reject)
-    stream.pipe(extract({ cwd, newer: true }, [basename(executable)]))
+    stream.pipe(extract({ cwd, newer: true, strip: 1 }))
   })
 }

@@ -2,10 +2,10 @@ import { components } from '@octokit/openapi-types'
 import { extension, version } from '../src'
 import { createWriteStream } from 'fs'
 import { mkdir, rm, writeFile } from 'fs/promises'
+import { execSync } from 'child_process'
 import { extract } from 'tar'
 import { join } from 'path'
 import axios from 'axios'
-import { exec, execSync } from 'child_process'
 
 export type Release = components['schemas']['release']
 
