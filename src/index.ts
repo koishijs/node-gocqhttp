@@ -4,7 +4,7 @@ import { spawn, SpawnOptions } from 'child_process'
 function gocq(options: gocq.Options = {}) {
   const args: string[] = []
   if (options.faststart) args.push('-faststart')
-  return spawn(gocq.binary, options)
+  return spawn(gocq.binary, args, options)
 }
 
 namespace gocq {
