@@ -5,6 +5,7 @@ import { basename, binary, version } from '.'
 import get from 'get-registry'
 import axios from 'axios'
 import env from 'env-paths'
+import internal from 'stream'
 
 const cwd = join(env('gocqhttp').data, version)
 const backup = join(cwd, basename)
@@ -15,12 +16,14 @@ export async function download() {
   const name = `${process.platform}-${process.arch}`
   const { version } = require('../package.json')
   const url = `${registry}/@gocq/x-${name}/-/x-${name}-${version}.tgz`
-  const { data: stream } = await axios.get<NodeJS.ReadableStream>(url, { responseType: 'stream' })
+  const { data: readable } = await axios.get<internal.Readable>(url, { responseType: 'stream' })
 
+  const writable = extract({ cwd, newer: true, strip: 1 }, ['package/' + basename])
   await new Promise<void>((resolve, reject) => {
-    stream.on('end', resolve)
-    stream.on('error', reject)
-    stream.pipe(extract({ cwd, newer: true, strip: 1 }, ['package/' + basename]))
+    writable.on('close', resolve)
+    writable.on('error', reject)
+    readable.on('error', reject)
+    readable.pipe(writable)
   })
 }
 
