@@ -1,13 +1,12 @@
 import { existsSync, promises as fs } from 'fs'
-import { dirname, join } from 'path'
+import { dirname, join, resolve } from 'path'
 import { extract } from 'tar'
-import { basename, binary, version } from '.'
+import { basename, binary } from '.'
 import get from 'get-registry'
 import axios from 'axios'
-import env from 'env-paths'
 import internal from 'stream'
 
-const cwd = join(env('gocqhttp').data, version)
+const cwd = resolve(__dirname, '../bin')
 const backup = join(cwd, basename)
 
 export async function download() {
