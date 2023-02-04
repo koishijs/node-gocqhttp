@@ -1,13 +1,12 @@
 import { existsSync, promises as fs } from 'fs'
-import { dirname, join, resolve } from 'path'
+import { dirname, resolve } from 'path'
 import { extract } from 'tar'
-import { basename, binary } from '.'
+import { backup, basename, binary } from '.'
 import get from 'get-registry'
 import axios from 'axios'
 import internal from 'stream'
 
 const cwd = resolve(__dirname, '../bin')
-const backup = join(cwd, basename)
 
 export async function download() {
   const registry = (await get()).replace(/\/$/, '')
