@@ -15,7 +15,7 @@ export function getArch(arch: string = process.arch) {
     case 'ia32': return '386'
     case 'x64': return 'amd64'
     case 'arm64': return 'arm64'
-    case 'arm': return 'armv7'
+    case 'arm': return 'arm'
   }
   throw new Error(`Unsupported architecture: ${arch}`)
 }
@@ -83,11 +83,18 @@ async function downloadArtifact(cwd: string, platform: string, arch: string) {
 
   console.log(`downloading from ${url}`)
   const [{ data }] = await Promise.all([
-    axios.get<ArrayBuffer>(url, { responseType: 'arraybuffer' }),
+    axios.get<ArrayBuffer>(url, {
+      responseType: 'arraybuffer',
+      headers: {
+        Authorization: 'Bearer ' + process.env.GITHUB_TOKEN,
+      },
+    }),
     mkdir(cwd, { recursive: true }),
   ])
   const adm = new AdmZip(Buffer.from(data))
-  adm.extractEntryTo(`go-cqhttp${platform === 'windows' ? '.exe' : ''}`, cwd, false, true)
+  const extension = platform === 'windows' ? '.exe' : ''
+  const dest = `${cwd}/go-cqhttp${extension}`
+  adm.extractEntryTo(`go-cqhttp_${platform}_${arch}${extension}`, dest)
 }
 
 export async function build(target: Target) {
@@ -128,6 +135,7 @@ export async function build(target: Target) {
 
 export async function start() {
   for (const target of matrix) {
+    console.log(`building ${target.join('-')}`)
     await build(target)
   }
 }
