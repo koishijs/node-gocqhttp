@@ -1,13 +1,14 @@
-import { components } from '@octokit/openapi-types'
-import { basename, version } from '../src'
+import { operations } from '@octokit/openapi-types'
+import { basename, runId, version } from '../src'
 import { createWriteStream } from 'fs'
 import { mkdir, rm, writeFile } from 'fs/promises'
 import { execSync } from 'child_process'
 import { extract } from 'tar'
 import { join } from 'path'
+import AdmZip from 'adm-zip'
 import axios from 'axios'
 
-export type Release = components['schemas']['release']
+type ArtifactResult = operations['actions/list-workflow-run-artifacts']['responses'][200]['content']['application/json']
 
 export function getArch(arch: string = process.arch) {
   switch (arch) {
@@ -43,13 +44,18 @@ const matrix: Target[] = [
   ['win32', 'arm'],
 ]
 
-export async function download(target: Target) {
-  const cwd = join(__dirname, '../temp')
-  await rm(cwd, { recursive: true, force: true })
+function once<S extends unknown[], T>(callback: (...args: S) => Promise<T>) {
+  let task: Promise<T> | null = null
+  return (...args: S) => (task ??= callback(...args))
+}
 
-  const platform = getPlatform(target[0])
-  const arch = getArch(target[1])
-  const filename = `go-cqhttp_${platform}_${arch}.${target[0] === 'win32' ? 'exe' : 'tar.gz'}`
+const getArtifacts = once(async (runId: number) => {
+  const { data } = await axios.get<ArtifactResult>(`https://api.github.com/repos/Mrs4s/go-cqhttp/actions/runs/${runId}/artifacts`)
+  return data.artifacts
+})
+
+async function downloadRelease(cwd: string, platform: string, arch: string) {
+  const filename = `go-cqhttp_${platform}_${arch}.${platform === 'windows' ? 'exe' : 'tar.gz'}`
   const url = `https://github.com/Mrs4s/go-cqhttp/releases/download/${version}/${filename}`
 
   console.log(`downloading from ${url}`)
@@ -58,15 +64,43 @@ export async function download(target: Target) {
     mkdir(cwd, { recursive: true }),
   ])
 
-  await new Promise<void>((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     stream.on('end', resolve)
     stream.on('error', reject)
-    if (target[0] === 'win32') {
+    if (url.endsWith('.exe')) {
       stream.pipe(createWriteStream(cwd + '/go-cqhttp.exe'))
     } else {
       stream.pipe(extract({ cwd, newer: true }, ['go-cqhttp']))
     }
   })
+}
+
+async function downloadArtifact(cwd: string, platform: string, arch: string) {
+  const artifacts = await getArtifacts(runId)
+  const url = artifacts.find((artifact) => {
+    return artifact.name === `${platform}_${arch}`
+  })!.archive_download_url
+
+  console.log(`downloading from ${url}`)
+  const [{ data }] = await Promise.all([
+    axios.get<ArrayBuffer>(url, { responseType: 'arraybuffer' }),
+    mkdir(cwd, { recursive: true }),
+  ])
+  const adm = new AdmZip(Buffer.from(data))
+  adm.extractEntryTo(`go-cqhttp${platform === 'windows' ? '.exe' : ''}`, cwd, false, true)
+}
+
+export async function build(target: Target) {
+  const cwd = join(__dirname, '../temp')
+  await rm(cwd, { recursive: true, force: true })
+
+  const platform = getPlatform(target[0])
+  const arch = getArch(target[1])
+  if (version.startsWith('v')) {
+    await downloadRelease(cwd, platform, arch)
+  } else {
+    await downloadArtifact(cwd, platform, arch)
+  }
 
   await writeFile(join(cwd, 'index.js'), [
     `module.exports.filename = __dirname + '/${basename}'`,
@@ -94,7 +128,7 @@ export async function download(target: Target) {
 
 export async function start() {
   for (const target of matrix) {
-    await download(target)
+    await build(target)
   }
 }
 
