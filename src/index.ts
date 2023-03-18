@@ -22,8 +22,8 @@ function gocq(options: gocq.Options = {}) {
 namespace gocq {
   export interface Options extends SpawnOptions {}
 
-  export const version = '0312f05'
-  export const runId = 4419078704
+  export const version = 'v1.0.0-rc5'
+  export const runId: number = null
   export const basename = 'go-cqhttp' + (process.platform === 'win32' ? '.exe' : '')
   export const binary = resolve(env('gocqhttp').data, version, basename)
   export const backup = resolve(__dirname, '../bin', basename)
