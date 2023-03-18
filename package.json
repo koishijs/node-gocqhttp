@@ -1,6 +1,6 @@
 {
   "name": "go-cqhttp",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "go-cqhttp",
   "engines": {
     "node": ">=12.0.0"

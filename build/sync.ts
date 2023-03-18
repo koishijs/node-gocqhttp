@@ -15,7 +15,7 @@ export function getArch(arch: string = process.arch) {
     case 'ia32': return '386'
     case 'x64': return 'amd64'
     case 'arm64': return 'arm64'
-    case 'arm': return 'arm'
+    case 'arm': return 'armv7'
   }
   throw new Error(`Unsupported architecture: ${arch}`)
 }
@@ -37,11 +37,11 @@ const matrix: Target[] = [
   ['linux', 'ia32'],
   ['linux', 'x64'],
   ['linux', 'arm64'],
-  ['linux', 'arm'],
+  // ['linux', 'arm'],
   ['win32', 'ia32'],
   ['win32', 'x64'],
   ['win32', 'arm64'],
-  ['win32', 'arm'],
+  // ['win32', 'arm'],
 ]
 
 function once<S extends unknown[], T>(callback: (...args: S) => Promise<T>) {
