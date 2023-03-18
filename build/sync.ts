@@ -94,7 +94,8 @@ async function downloadArtifact(cwd: string, platform: string, arch: string) {
   const adm = new AdmZip(Buffer.from(data))
   const extension = platform === 'windows' ? '.exe' : ''
   const dest = `${cwd}/go-cqhttp${extension}`
-  adm.extractEntryTo(`go-cqhttp_${platform}_${arch}${extension}`, dest)
+  const entry = adm.getEntry(`go-cqhttp_${platform}_${arch}${extension}`)
+  await writeFile(dest, entry!.getData())
 }
 
 export async function build(target: Target) {
