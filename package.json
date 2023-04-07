@@ -1,6 +1,6 @@
 {
   "name": "go-cqhttp",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "description": "go-cqhttp",
   "engines": {
     "node": ">=12.0.0"
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@octokit/openapi-types": "^13.13.1",
     "@types/adm-zip": "^0.5.0",
-    "@types/node": "^18.15.3",
+    "@types/node": "^18.15.5",
     "@types/tar": "^6.1.4",
     "adm-zip": "^0.5.10",
     "esbuild": "^0.15.18",
