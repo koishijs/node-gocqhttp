@@ -27,7 +27,7 @@ namespace gocq {
     signServer?: string
   }
 
-  export const version = 'v1.0.0'
+  export const version = 'v1.0.1'
   export const runId: number = null
   export const basename = 'go-cqhttp' + (process.platform === 'win32' ? '.exe' : '')
   export const binary = resolve(env('gocqhttp').data, version, basename)
